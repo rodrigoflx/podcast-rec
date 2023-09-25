@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 import logging
-
+import re
 
 class CategoryScraper:
     """ Tool for fetching link to categories of podcasts available in the Itunes
@@ -11,8 +11,8 @@ class CategoryScraper:
 
     ITUNES_URL = 'https://podcasts.apple.com/us/genre/podcasts/id26'
     API = "https://itunes.apple.com/lookup?id=%s"
-    REGEX = 
-   
+    REGEX_ID = r"id(\d+)"
+
     def scrape(self):
         # Fetch response and initiate parser
         logging.info(f"Fetching HTML content from {self.ITUNES_URL}")
@@ -30,13 +30,32 @@ class CategoryScraper:
             # Loop through tags from retrieved HTML content
             for category in soup.find_all('a', {'class', 'top-level-genre'}):
                 podcast_category = category.text.strip()
-                category_url = Category['href']
+                category_url = category['href']
 
-                # Fetch podcast page 
-                podcast_response = requests.get(category_url)
-                soup_podcast = BeautifulSoup(podcast_response.content, 'lxml')
+                # Fetch genre page 
+                category_response = requests.get(category_url)
+                soup_category = BeautifulSoup(category_response.content, 'lxml')
                 
-                logging.info("Scraping podcasts for each genre")
-                
-        logging.info("Done Scraping")
+                # Scrap links for the given genre
+                logging.info(f"Scraping genre {podcast_category}")
+                for podcast in soup_category.select('div.column ul li a'):
+                    podcast_url = podcast["href"]
+                    podcast_name = podcast.text.strip()
 
+                    print(podcast_url)
+
+                    podcast_id = re.search(self.REGEX_ID, podcast_url).group(1)
+
+                    logging.info(f"Writing - Name {podcast_name} : URL {podcast_url} : ID {podcast_id}")
+                    writer.writerow({
+                        'Podcast Name' : podcast_name, 
+                        'Podcast Category' : podcast_category,
+                        'Podcast URL' : podcast_url,
+                        'ID' : podcast_id
+                        })
+                    
+        logging.info("Scraping of Podcast IDs is done")
+
+if __name__ == '__main__':
+    podcastScraper = CategoryScraper()
+    podcastScraper.scrape()
