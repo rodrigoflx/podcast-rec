@@ -55,7 +55,3 @@ class CategoryScraper:
                         })
                     
         logging.info("Scraping of Podcast IDs is done")
-
-if __name__ == '__main__':
-    podcastScraper = CategoryScraper()
-    podcastScraper.scrape()
