@@ -16,45 +16,44 @@ class RSSSCraper:
         self.session.mount('http://', adapter)
         self.session.mount('https://', adapter)
         
-    def scrape_url(self, url, podcast):
+    def scrape_rss(self, url : str, podcast : str) -> [Episode]:
+        """ 
+        Scrape the RSS feed given by the 'url' parameter and dump the podcasts onto a
+        list with the podcasts name ('parameter') attached to it
+
+        :param url: URL to RSS feed 
+        :param podcast: Name of the podcast
+        """
         podcasts = []
         try:
-            response = requests.get(url)
-            soup = BeautifulSoup(response.content, 'lxml-xml')
+            response = session.get(url, timeout=10)  # Setting a timeout can be useful
+            response.raise_for_status()  # This will raise an HTTPError if the HTTP request returned an unsuccessful status code
+   
+            try:
+                soup = BeautifulSoup(response.content, 'lxml-xml')
+            except Exception as e:
+                logging.error(f"Error parsing the content from {url}: {e}")
+                return podcasts
 
-            i = 0
+            if not soup.find("rss"):
+                logging.error("Given URL doesn't point to a RSS feed")
+                return podcasts
 
             # Each item corresponds to one episode of the podcast
             for item in soup.find_all('item'):
-                if i == 5:
-                    break
                 enclosure = item.find('enclosure')
-                if enclosure:
-                    episode = Episode(item.title, item.guid, podcast, enclosure['url'])
-                    podcasts.append(episode)
+
+                title = getattr(item, 'title', None)
+                guid = getattr(item, 'guid', None)
+                
+                if enclosure and title and guid:
+                    podcasts.append(Episode(title, guid, podcast, enclosure.get('url', '')))
                 else:
-                    logging.info(f"No enclosure found for {item.title}")
-                i = i + 1 
-               
-            return podcasts
-        except:
-            logging.error(f" Connection on {url} failed")
-            return None
-        finally:
-            response.close()
+                    logging.info(f"No enclosure found for {title if title else 'unknown item'}")
 
-    def download_podcast(self, filename, url):
-        response = requests.get(url, stream=True)
+        except requests.Timeout:
+            logging.error(f"Timeout occurred while fetching {url}")
+        except requests.RequestException as e:
+            logging.error(f"Error occurred while fetching {url}: {e}")
 
-        with open(filename, 'wb') as file:
-            for chunk in response.iter_content(chunk_size=8192):
-                file.write(chunk)
-               
-        response.close() 
-               
-if __name__ == '__main__':
-    scraper = RSSSCraper()
-    podcasts = scraper.scrape_url('https://feeds.simplecast.com/p7Q9jZ0K', 'Audio Poem of the Day')
-    
-    for podcast in podcasts:
-        print(podcast.medialink)
+        return podcasts
