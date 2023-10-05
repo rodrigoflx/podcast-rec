@@ -1,0 +1,18 @@
+# TO-DO
+# 1. Modify access parameters
+
+version: '3.7'
+
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data  # Mount volume for persistence
+      - ./src/postgre/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  pgdata:  # Define the volume named pgdata

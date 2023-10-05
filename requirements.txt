@@ -3,3 +3,4 @@ bs4
 logging
 csv
 psycopg2
+openai-whisper

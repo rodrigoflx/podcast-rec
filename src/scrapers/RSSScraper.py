@@ -4,9 +4,15 @@ import logging
 from Episode import Episode
 
 
-class RSSSCraper:
+class RSSScraper:
 
-    def __init__(self, max_retries=3):
+    def __init__(self, max_retries : int =3):
+        """
+        Initializes the RSSScraper with the given amount of maximal retries for establishing a connection through HTTP
+
+        :param max_retries: Number of retries for HTTP Connection
+        """
+
         self.session = requests.Session()
 
         # Create an adapter with the specified number of retries
@@ -57,3 +63,14 @@ class RSSSCraper:
             logging.error(f"Error occurred while fetching {url}: {e}")
 
         return podcasts
+
+    def download_podcast(self, filename, url):
+        response = requests.get(url, stream=True)
+
+        with open(filename, 'wb') as file:
+            for chunk in response.iter_content(chunk_size=8192):
+                file.write(chunk)
+
+if __name__ == '__main__':
+    scraper = RSSScraper()
+    scraper.download_podcast("gold_standard.mp3", "https://traffic.megaphone.fm/RRTET6328440039.mp3?updated=1696474062")
