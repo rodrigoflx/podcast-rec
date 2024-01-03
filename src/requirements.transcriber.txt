@@ -1,0 +1,5 @@
+rq
+redis
+psycopg2
+openai-whisper
+numpy

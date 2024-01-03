@@ -1,0 +1,21 @@
+# Start from a base image. Python 3.9 is just an example, adjust as needed.
+FROM python:3.11
+
+# Set a working directory
+WORKDIR /app
+
+# Install system dependencies (if any)
+# RUN apt-get update && apt-get install -y some-package
+
+# Copy requirements and install Python dependencies
+COPY requirements.downloader.txt .
+RUN pip install --no-cache-dir -r requirements.downloader.txt
+
+# Copy the downloader script
+COPY Downloader.py /app/Downloader.py
+COPY Transcriber.py /app/Transcriber.py
+COPY Episode.py /app/Episode.py
+
+
+# Run the script when the container starts
+CMD ["python", "Downloader.py"]

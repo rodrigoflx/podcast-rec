@@ -1,0 +1,4 @@
+requests
+rq
+psycopg2
+openai-whisper

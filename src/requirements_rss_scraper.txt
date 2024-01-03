@@ -1,0 +1,7 @@
+requests
+redis
+rq
+bs4
+lxml
+psycopg2
+openai-whisper

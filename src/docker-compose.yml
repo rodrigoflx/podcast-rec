@@ -1,18 +1,42 @@
-# TO-DO
-# 1. Modify access parameters
-
 version: '3.7'
 
 services:
-  db:
+  redis:
+    image: redis:latest
+  
+  postgres:
     image: postgres:latest
     environment:
-      POSTGRES_DB: mydatabase
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-    volumes:
-      - pgdata:/var/lib/postgresql/data  # Mount volume for persistence
-      - ./src/postgre/init.sql:/docker-entrypoint-initdb.d/init.sql
+      POSTGRES_PASSWORD: mysecretpassword
+      POSTGRES_DB: database
+      POSTGRES_USER: username
 
-volumes:
-  pgdata:  # Define the volume named pgdata
+  itunes_scraper:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile.itunesScraper
+    depends_on:
+      - redis
+
+  rss_scraper:
+    build:
+      context: ./
+      dockerfile: Dockerfile.rssScraper
+    depends_on:
+      - redis
+  
+  downloader:
+    build:
+      context: ./
+      dockerfile: Dockerfile.downloader
+    depends_on:
+      - redis
+
+  transcriber:
+    build:
+      context: ./
+      dockerfile: Dockerfile.transcriber
+    depends_on:
+      - redis
+      - postgres
+

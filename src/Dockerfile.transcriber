@@ -1,0 +1,18 @@
+# Use the official Python image
+FROM python:3.11
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the script and dependencies
+COPY Episode.py /app/Episode.py
+COPY Transcriber.py /app/Transcriber.py
+
+COPY requirements.transcriber.txt /app/requirements.transcriber.txt 
+
+
+# Install the required Python packages
+RUN pip install --no-cache-dir -r requirements.transcriber.txt 
+
+# Command to run the script
+CMD ["python", "Transcriber.py"]
